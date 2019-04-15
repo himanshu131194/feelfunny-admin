@@ -1,0 +1,7 @@
+export const LOGIN_USER = "login_user"
+export const LOGOUT_USER = "logout_user"
+export const AUTH_USER = "auth_user"
+export const ADD_USER = "add_user"
+export const SECTIONS_LIST = "sections_list"
+export const UPLOAD_S3 = "upload_s3"
+export const DEFAULT_STATE = "default_state"
