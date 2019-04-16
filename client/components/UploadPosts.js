@@ -46,7 +46,7 @@ class UploadPosts extends Component{
                a.crossOrigin="Anonymous";
                a.width = 0, a.height = 0;
                if(this.validateUplaodURL(b)){
-               	   let mimeType = "image/jpg", ext = 'jpg'
+               	   let mimeType = "image/jpg", ext = 'jpg';
                	   if(b.split('.').pop()==('jpg'|'png'|'gif'|'jpeg')){
                        mimeType = `image/${b.split('.').pop()}`;
                        ext = b.split('.').pop();

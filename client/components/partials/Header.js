@@ -24,6 +24,7 @@ class Header extends Component{
 	  	 document.querySelector(e.currentTarget.dataset.model).classList.add('display-none')
 	  }
 	  openModel = (e)=>{
+	  	 this.clearInputs()
 	  	 this.props.setDefaultState(1);
          document.querySelector(e.currentTarget.dataset.model).classList.remove('display-none')
 	  }
@@ -45,16 +46,20 @@ class Header extends Component{
            	  });
            }
 	  }
+	  clearInputs(){
+	  	 let a = document.getElementsByClassName('model-input');
+	  	 for(let x of a)
+	  	 	x.value = '';
+	  }
 	  submitSignup = (e)=>{
            e.preventDefault();
-           const usrname = (e.target.elements['signup_name'].value).trim(),
-                 email = (e.target.elements['signup_email'].value).trim(),
-                 password = (e.target.elements['signup_password'].value).trim();
-           if(usrname.length>0 && email.length>0 && password.length>0){
-           	  this.props.addUser({usrname, email, password}, (err)=>{
+           const section_value = (e.target.elements['section_value'].value).trim(),
+                 section_desc = (e.target.elements['section_desc'].value).trim(),
+                 section_url = (e.target.elements['section_url'].value).trim();
+           if(section_value.length>0 && section_desc.length>0 && section_url.length>0){
+           	  this.props.addSection({section_value, section_desc, section_url}, (err)=>{
                     if(err)
                     	console.log(err)
-                    localStorage.setItem(CONFIG.ACCESS_TOKEN, this.props.auth.token);
                     document.querySelector("#close_signupmodel").click();
            	  });
            }
@@ -70,7 +75,7 @@ class Header extends Component{
                             ? 
 	                        <Fragment>
 	                         <a href="#" className="uppercase margin-ryt-30" data-model="#login_model" onClick={this.openModel}>Login</a>
-			      	  	 	 <div><button className="uppercase header-actions" data-model="#signup_model" onClick={this.openModel}>Signup</button></div>
+			      	  	 	 <div><button className="uppercase header-actions" data-model="#signup_model" onClick={this.openModel}>Add Section</button></div>
 	                        </Fragment>
 	                        :
 	                        <Fragment>
@@ -139,7 +144,7 @@ class Header extends Component{
 		        <div className="model-backdrop display-none" id="signup_model">
 		              <div className="model-box">
 		              	 <header className="flex">
-		              	 	<h3>Hey there!</h3>
+		              	 	<h3>Add Section</h3>
 					        <a href="#" data-model="#signup_model" id="close_signupmodel" onClick={this.closeModel}>
 					            <svg className="svg-icons-20 pointer" viewBox="0 0 612 612">
 							          	    <use href="/icons/sprites.svg#croos_icon" />
@@ -147,36 +152,20 @@ class Header extends Component{
 					        </a>
 		              	 </header>
 		              	 <main>
-		              	 	  <div className="social-login-box margin-top-20 border-botm">
-		              	 	  	  <div className="font-14 color-90949c">Connect with a social network</div>
-		              	 	  	  <div className="flex margin-top-15 social-logins">
-		              	 	  	  	 <div><button className="btn-social-login google-login">
-										  <svg viewBox="0 0 512 512" className="svg-icons-30 margin-ryt-15">
-									  	  <use href="/icons/sprites.svg#googleplus_icon" />
-										  </svg>
-		              	 	  	  	 Google</button>
-		              	 	  	  	 </div>
-		              	 	  	  	 <div><button className="btn-social-login facebook-login">
-		              	 	  	  	 	<svg viewBox="0 0 216 216" className="svg-icons-30 margin-ryt-15">
-		                                     <use href="/icons/sprites.svg#facebooklogin_icon" />
-		                                </svg>
-		              	 	  	  	 Facebook</button></div>
-		              	 	  	  </div>
-		              	 	  </div>
 		                      <div className="margin-top-20">
-		                      	<div className="font-14 color-90949c">Sign up with your email address</div>
+		                      	<div className="font-14 color-90949c">New section for post categorization</div>
 		                      	<form method="post" onSubmit={this.submitSignup}>
 		                          <div className="margin-top-15">
-			              	 	  	<input type="text" className="model-input font-14" id="signup_name" placeholder="Your username" />
+			              	 	  	<input type="text" className="model-input font-14" name="section_value" placeholder="Section value" />
 			              	 	  </div>
 			                      <div className="margin-top-15">
-			              	 	  	<input type="email" className="model-input font-14" id="signup_email" placeholder="Your email" />
+			              	 	  	<input type="text" className="model-input font-14" name="section_desc" placeholder="Section describe" />
 			              	 	  </div>
 			              	 	  <div className="margin-top-15">
-			              	 	  	<input type="password" className="model-input font-14" id="signup_password" placeholder="Your password" />
+			              	 	  	<input type="text" className="model-input font-14" name="section_url" placeholder="Section url" />
 			              	 	  </div>
 			              	 	  <div className="margin-top-15 txt-center">
-			              	 	  	<button className="uppercase btn btn-default">Sign up</button>
+			              	 	  	<button className="uppercase btn btn-default">submit</button>
 			              	 	  </div>
 		                      	</form>
 		                      </div>

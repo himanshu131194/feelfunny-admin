@@ -1,25 +1,15 @@
-import express from 'express'
-import path from 'path'
 import CONFIG from './../config'
+import mongoose from 'mongoose'
+mongoose.Promise = global.Promise
 
-import Template from './../template.js'
+mongoose.connect(CONFIG.MONGO_URI, { useNewUrlParser: true });
 
-const app = express();
-
-const CURRENT_WORKING_DIR = process.cwd();
-
-app.use(express.static(path.join(CURRENT_WORKING_DIR, 'public')));
-
-//comment out before building for production
-import devBundle from './devBundle'
-//comment out before building for production
-devBundle.compile(app)
-
-app.use('/dist', express.static(path.join(CURRENT_WORKING_DIR, 'dist')))
-
-app.get('*', (req, res)=>{
-   res.send(Template());
+mongoose.connection.on('error', ()=>{
+	 throw new Error('unable to connect to database')
 })
+
+
+import app from './express'
 
 app.listen(CONFIG.port, (err)=> {
   if (err) {

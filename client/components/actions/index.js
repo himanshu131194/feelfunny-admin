@@ -1,4 +1,4 @@
-import {AUTH_USER, ADD_USER, LOGIN_USER, LOGOUT_USER, SECTIONS_LIST, DEFAULT_STATE} from './types'
+import {AUTH_USER, ADD_USER, LOGIN_USER, LOGOUT_USER, SECTIONS_LIST, DEFAULT_STATE, ADD_SECTION} from './types'
 import CONFIG from '../../../config'
 import axios from 'axios'
 
@@ -56,6 +56,22 @@ export const addUser = ({usrname, email, password}, cb)=>{
                      type: ADD_USER,
                      payload: result
                  })
+                 cb(err);
+        }
+} 
+
+
+
+export const addSection = ({section_value, section_desc, section_url}, cb)=>{
+        return async ()=>{
+                 let err = null, result = null;
+                 try{
+                     let {data} = await axios.post(`${CONFIG.API_URL}/api/sections`, {section_value, section_desc, section_url});
+                         //result = {user : data.data, token: data.token}; 
+                         console.log(data)
+                 }catch(e){
+                     err = e.response.data.error;
+                 }
                  cb(err);
         }
 } 
@@ -146,6 +162,10 @@ export const setDefaultState = (state)=>{
                  })
        }
 }
+
+
+
+
 
 
 

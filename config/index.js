@@ -6,5 +6,6 @@ export default {
   ERROR: {
   	 100: 'Please put a valid image url',
   	 101: 'Please refresh and try to login again'
-  }
+  },
+  MONGO_URI : 'mongodb+srv://feelfunny:feelfunny123@feelfunny-jfu4v.mongodb.net/test?retryWrites=true',
 }
