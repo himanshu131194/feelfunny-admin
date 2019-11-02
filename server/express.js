@@ -3,6 +3,7 @@ import path from 'path'
 import CONFIG from './../config'
 import bodyParser from 'body-parser'
 import Template from './../template.js'
+import adminController from './controllers'
 
 const app = express();
 
@@ -20,6 +21,8 @@ import devBundle from './devBundle'
 devBundle.compile(app)
 
 app.use('/dist', express.static(path.join(CURRENT_WORKING_DIR, 'dist')))
+
+app.use('/api', adminController(express.Router()));
 
 app.get('*', (req, res)=>{
    res.send(Template());
