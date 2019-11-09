@@ -43,7 +43,8 @@ export default (router)=>{
  
       router.get('/9gag-data', async (req, res)=>{
              //get data form 9gag url
-             const gagURL = 'https://9gag.com/v1/group-posts/group/wtf';
+             const section = req.query.section || 'funny';
+             const gagURL = `https://9gag.com/v1/group-posts/group/${section}`;
 
              const {data} = await rp({ 
                   uri: gagURL,
@@ -53,6 +54,7 @@ export default (router)=>{
              const finalArray = [];
              console.log(posts);
              //LOOOP OVER SET OF DATA 
+             let count = 0;
              for(let post of posts){
                 let objJSON = {};
                  objJSON['post_title'] = post.title;
@@ -81,7 +83,16 @@ export default (router)=>{
                         encoding: null
                     });
                  }
-                 fs.writeFileSync(`./crawled-memes/${objJSON['post_id']}.${objJSON['ext']}`, mediapost);
+                 let date = new Date(), 
+                     month = date.getMonth()+1,
+                     today = `${date.getDate()}-${month}-${date.getFullYear()}`;
+                     
+                 let perdayFolder = `${section}_${today}`;
+                 if(!fs.existsSync(`./crawled-memes/${perdayFolder}`)){
+                    fs.mkdirSync(`./crawled-memes/${perdayFolder}`);                
+                 }
+                 fs.writeFileSync(`./crawled-memes/${perdayFolder}/${objJSON['post_id']}.${objJSON['ext']}`, mediapost);
+                 console.log(++count);
                  console.log(objJSON);
                  finalArray.push(objJSON);
              }

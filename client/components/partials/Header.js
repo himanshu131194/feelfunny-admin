@@ -75,7 +75,8 @@ class Header extends Component{
                             ? 
 	                        <Fragment>
 	                         <a href="#" className="uppercase margin-ryt-30" data-model="#login_model" onClick={this.openModel}>Login</a>
-			      	  	 	 <div><button className="uppercase header-actions" data-model="#signup_model" onClick={this.openModel}>Add Section</button></div>
+			      	  	 	 <div><button className="uppercase header-actions margin-ryt-30" data-model="#signup_model" onClick={this.openModel}>Add Section</button></div>
+							 <a href="#" className="uppercase margin-ryt-30" data-model="#login_model" onClick={this.openModel}>crawl data 9gag</a>
 	                        </Fragment>
 	                        :
 	                        <Fragment>

@@ -7,6 +7,9 @@ const Comments = new mongoose.Schema({
       post_title:{
           type: String
       },
+      post_type:{
+          type: String
+      },
       posted_fb:{
           type: Boolean,
           default: 0
@@ -29,6 +32,9 @@ const Comments = new mongoose.Schema({
       },
       media_type:{
          type : Number 
+      },
+      next_cursor:{
+         type: String
       },
       created: {
       	 type: Date,
