@@ -1,5 +1,10 @@
 import request from 'request'
 import rp from 'request-promise'
+import CONFIG from '../../config';
+import uuid from 'uuid/v4';
+import AWS from 'aws-sdk';
+import fs from 'fs';
+import crawledPosts from '../models/posts';
 
 export default (router)=>{
 
@@ -36,6 +41,58 @@ export default (router)=>{
 
       })
  
+      router.get('/9gag-data', async (req, res)=>{
+             //get data form 9gag url
+             const gagURL = 'https://9gag.com/v1/group-posts/group/wtf';
+
+             const {data} = await rp({ 
+                  uri: gagURL,
+                  json: true
+             });
+             const {posts, nextCursor} = data;
+             const finalArray = [];
+             console.log(posts);
+             //LOOOP OVER SET OF DATA 
+             for(let post of posts){
+                let objJSON = {};
+                 objJSON['post_title'] = post.title;
+                 objJSON['post_id'] = uuid();
+                 //check video
+                 
+                 let mediapost = '';
+                 if(post.type=="Photo" || post.type=="Article"){
+                    objJSON['media_type'] = CONFIG.CONTENT_TYPE.PHOTO;
+                    objJSON['ext'] = post.images.image700.url.split('.').pop();
+                    console.log(post.images.image700.url);
+                    try {
+                        mediapost = await rp.get({
+                            uri: post.images.image700.url,
+                            encoding: null
+                        });
+                    } catch (error) {
+                        console.log(error)
+                    }
+                 }else{
+                    objJSON['media_type'] = CONFIG.CONTENT_TYPE.PHOTO;
+                    objJSON['ext'] = post.images.image460sv.url.split('.').pop();
+                    
+                    mediapost = await rp.get({
+                        uri: post.images.image460sv.url,
+                        encoding: null
+                    });
+                 }
+                 fs.writeFileSync(`./crawled-memes/${objJSON['post_id']}.${objJSON['ext']}`, mediapost);
+                 console.log(objJSON);
+                 finalArray.push(objJSON);
+             }
+
+             crawledPosts.insertMany(finalArray, function(error, docs) {
+                res.send({
+                    docs
+                })
+             });
+      });
+
       router.get('/facebook-page', (req, res)=>{
             
             const posts = [
