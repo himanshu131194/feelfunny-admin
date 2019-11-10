@@ -6,7 +6,8 @@ import axios from 'axios';
 class Crawler extends CommonClass(Component){
       state =  {
           loading: 0,
-          section : null
+          loading_posts: 0,
+          section : 'india'
       }
       componentDidMount(){
                this.toggleNavigationView('popular_section', 'popular-section-links', 'popular-selected');
@@ -15,11 +16,11 @@ class Crawler extends CommonClass(Component){
            await this.setState({section : e.target.innerHTML});
       }
       crawldata = async (e)=>{
-          console.log("dssdsds");
+          await this.setState({loading :1});
           e.preventDefault();
           let section = this.state.section.toLowerCase();
           const {data} = await axios.get(`/api/9gag-data?section=${section}`);
-          console.log(data)
+          await this.setState({loading :0});
       } 
       render(){
             return(
@@ -79,16 +80,19 @@ class Crawler extends CommonClass(Component){
                       <div className="main-content">
 
                       <div className="featured-tags">
-		        	 	  	   <div className="flex-wrap">
-							      <a className="tags-box featured-tags-box margin-botm-10 margin-ryt-10" onClick={this.crawldata}>
+		        	 	  	   <div className="flex-center">
+							      <a className="tags-box featured-tags-box margin-ryt-10" onClick={this.crawldata}>
 							        Refresh Crawled Data
 							      </a>
+                                  {this.state.loading==1 &&
+                                    <div id="canvas-loader" className="loader-circular loader-30"></div>
+                                  }
 		        	 	  	   </div>
 		        	 	</div>
 
 
                         <div className="posts-container">
-                                    {this.state.loading==0
+                                    {this.state.loading_posts==0
                                     ? <div className="txt-center">
                                         <div className="margin-top-20">
                                         <h3 className="color-90949c">No posts to show</h3>

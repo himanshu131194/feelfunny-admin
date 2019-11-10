@@ -40,8 +40,58 @@ export default (router)=>{
         });
 
       })
+
+
+      const s3upload = async (mediapost, contentType, key)=>{
+        const s3 = new AWS.S3({
+            accessKeyId: CONFIG.S3.ACCESS,
+            secretAccessKey: CONFIG.S3.SECRET
+        });
+        const paramsThumb = {
+            Bucket: CONFIG.S3.BUCKET,
+            Key: key,
+            Body: mediapost,
+            ContentType: contentType
+          }
+          try {
+            const s3Response = await s3.putObject(paramsThumb).promise();
+                  s3Response['post_url'] = `https://stylemycv.s3.ap-south-1.amazonaws.com/${key}`;
+            return s3Response;
+          } catch (error) {
+             return {
+                 error
+             }
+          }
+      }
+
+
+      function update9gagdb(url, nextCursor){
+            let a = 1;
+            console.log(++a)
+            // let alreadyexitsid = false;
+            // const s3 = new AWS.S3({
+            //     accessKeyId: CONFIG.S3.ACCESS,
+            //     secretAccessKey: CONFIG.S3.SECRET
+            // }); 
+
+
+
+            // //IF CURSOR THR 
+            // if(alreadyexitsid){
+
+            // }else{
+                update9gagdb();
+           // }
+
+      }
  
       router.get('/9gag-data', async (req, res)=>{
+            // const s3 = new AWS.S3({
+            //     accessKeyId: CONFIG.S3.ACCESS,
+            //     secretAccessKey: CONFIG.S3.SECRET
+            // }); 
+             
+
              //get data form 9gag url
              const section = req.query.section || 'funny';
              const gagURL = `https://9gag.com/v1/group-posts/group/${section}`;
@@ -50,22 +100,26 @@ export default (router)=>{
                   uri: gagURL,
                   json: true
              });
+
+             
              const {posts, nextCursor} = data;
+
+             //update9gagdb(gagURL, nextCursor);
+
              const finalArray = [];
-             console.log(posts);
              //LOOOP OVER SET OF DATA 
-             let count = 0;
              for(let post of posts){
                 let objJSON = {};
+                 objJSON['next_cursor'] = nextCursor;
                  objJSON['post_title'] = post.title;
                  objJSON['post_id'] = uuid();
-                 //check video
-                 
+                 objJSON['post_type'] = section;
+                 objJSON['crawled_id'] = post.id;
+                 //check video                 
                  let mediapost = '';
                  if(post.type=="Photo" || post.type=="Article"){
                     objJSON['media_type'] = CONFIG.CONTENT_TYPE.PHOTO;
                     objJSON['ext'] = post.images.image700.url.split('.').pop();
-                    console.log(post.images.image700.url);
                     try {
                         mediapost = await rp.get({
                             uri: post.images.image700.url,
@@ -75,7 +129,7 @@ export default (router)=>{
                         console.log(error)
                     }
                  }else{
-                    objJSON['media_type'] = CONFIG.CONTENT_TYPE.PHOTO;
+                    objJSON['media_type'] = CONFIG.CONTENT_TYPE.VIDEO;
                     objJSON['ext'] = post.images.image460sv.url.split('.').pop();
                     
                     mediapost = await rp.get({
@@ -91,10 +145,17 @@ export default (router)=>{
                  if(!fs.existsSync(`./crawled-memes/${perdayFolder}`)){
                     fs.mkdirSync(`./crawled-memes/${perdayFolder}`);                
                  }
-                 fs.writeFileSync(`./crawled-memes/${perdayFolder}/${objJSON['post_id']}.${objJSON['ext']}`, mediapost);
-                 console.log(++count);
-                 console.log(objJSON);
-                 finalArray.push(objJSON);
+
+
+                 
+
+                 const contentType = objJSON['media_type'] == CONFIG.CONTENT_TYPE.VIDEO ? `video/${objJSON['ext']}` : `image/${objJSON['ext']}`;
+                 const s3Uploadresult = s3upload(mediapost, contentType, `9gag_data/${objJSON['post_id']}.${objJSON['ext']}`);
+                       console.log(s3Uploadresult);
+                       objJSON['post_url'] = s3Uploadresult['post_url'];
+
+                  fs.writeFileSync(`./crawled-memes/${perdayFolder}/${objJSON['post_id']}.${objJSON['ext']}`, mediapost);
+                  finalArray.push(objJSON);
              }
 
              crawledPosts.insertMany(finalArray, function(error, docs) {

@@ -10,6 +10,9 @@ const Comments = new mongoose.Schema({
       post_type:{
           type: String
       },
+      crawled_id:{
+          type: String
+      },
       posted_fb:{
           type: Boolean,
           default: 0
