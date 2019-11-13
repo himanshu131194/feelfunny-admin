@@ -64,51 +64,30 @@ export default (router)=>{
           }
       }
 
+      let a = 1;
+      const update9gagdb = async (section, cursor_url)=>{
+            
+            console.log(++a);
+            
+            let url =  cursor_url ? `${section}?${cursor_url}` : section;
+            const gagURL = `https://9gag.com/v1/group-posts/group/${url}`;
 
-      function update9gagdb(url, nextCursor){
-            let a = 1;
-            console.log(++a)
-            // let alreadyexitsid = false;
-            // const s3 = new AWS.S3({
-            //     accessKeyId: CONFIG.S3.ACCESS,
-            //     secretAccessKey: CONFIG.S3.SECRET
-            // }); 
+            const {data} = await rp({ 
+                uri: gagURL,
+                json: true
+            });
+            const {posts, nextCursor} = data;
+            const finalArray = [];
+            let result = [];
 
-
-
-            // //IF CURSOR THR 
-            // if(alreadyexitsid){
-
-            // }else{
-                update9gagdb();
-           // }
-
-      }
- 
-      router.get('/9gag-data', async (req, res)=>{
-            // const s3 = new AWS.S3({
-            //     accessKeyId: CONFIG.S3.ACCESS,
-            //     secretAccessKey: CONFIG.S3.SECRET
-            // }); 
-             
-
-             //get data form 9gag url
-             const section = req.query.section || 'funny';
-             const gagURL = `https://9gag.com/v1/group-posts/group/${section}`;
-
-             const {data} = await rp({ 
-                  uri: gagURL,
-                  json: true
-             });
-
-             
-             const {posts, nextCursor} = data;
-
-             //update9gagdb(gagURL, nextCursor);
-
-             const finalArray = [];
-             //LOOOP OVER SET OF DATA 
-             for(let post of posts){
+            for(let post of posts){
+                //check post is already exists 
+                const checkpostexists = await crawledPosts.findOne({ post_id : post.id})
+                if(checkpostexists){
+                     return {
+                         result
+                     }
+                }else{
                 let objJSON = {};
                  objJSON['next_cursor'] = nextCursor;
                  objJSON['post_title'] = post.title;
@@ -132,10 +111,15 @@ export default (router)=>{
                     objJSON['media_type'] = CONFIG.CONTENT_TYPE.VIDEO;
                     objJSON['ext'] = post.images.image460sv.url.split('.').pop();
                     
-                    mediapost = await rp.get({
-                        uri: post.images.image460sv.url,
-                        encoding: null
-                    });
+                    try{
+                        mediapost = await rp.get({
+                            uri: post.images.image460sv.url,
+                            encoding: null
+                        });
+                    }catch(error){
+                           console.log(error)
+                    }
+
                  }
                  let date = new Date(), 
                      month = date.getMonth()+1,
@@ -144,25 +128,102 @@ export default (router)=>{
                  let perdayFolder = `${section}_${today}`;
                  if(!fs.existsSync(`./crawled-memes/${perdayFolder}`)){
                     fs.mkdirSync(`./crawled-memes/${perdayFolder}`);                
-                 }
-
-
-                 
+                 }                 
 
                  const contentType = objJSON['media_type'] == CONFIG.CONTENT_TYPE.VIDEO ? `video/${objJSON['ext']}` : `image/${objJSON['ext']}`;
-                 const s3Uploadresult = s3upload(mediapost, contentType, `9gag_data/${objJSON['post_id']}.${objJSON['ext']}`);
+                 const s3Uploadresult = await s3upload(mediapost, contentType, `9gag_data/${objJSON['post_id']}.${objJSON['ext']}`);
                        console.log(s3Uploadresult);
                        objJSON['post_url'] = s3Uploadresult['post_url'];
 
                   fs.writeFileSync(`./crawled-memes/${perdayFolder}/${objJSON['post_id']}.${objJSON['ext']}`, mediapost);
+                  console.log(objJSON);
                   finalArray.push(objJSON);
+                }
              }
 
-             crawledPosts.insertMany(finalArray, function(error, docs) {
-                res.send({
-                    docs
-                })
-             });
+             let response = await crawledPosts.insertMany(finalArray);
+             result = result.concat(response);
+             
+             //CALL FOR NEXT ROUND 
+             update9gagdb(section, nextCursor);
+      }
+ 
+      router.get('/9gag-data', (req, res)=>{
+            // const s3 = new AWS.S3({
+            //     accessKeyId: CONFIG.S3.ACCESS,
+            //     secretAccessKey: CONFIG.S3.SECRET
+            // }); 
+            const section = req.query.section || 'funny';
+                  update9gagdb(section);
+             //get data form 9gag url
+            //  const section = req.query.section || 'funny';
+            //  update9gagdb(section);
+            //  const gagURL = `https://9gag.com/v1/group-posts/group/${section}`;
+
+            //  const {data} = await rp({ 
+            //       uri: gagURL,
+            //       json: true
+            //  });
+
+             
+            //  const {posts, nextCursor} = data;
+
+            //  //update9gagdb(gagURL, nextCursor);
+
+            //  const finalArray = [];
+            //  //LOOOP OVER SET OF DATA 
+            //  for(let post of posts){
+            //     let objJSON = {};
+            //      objJSON['next_cursor'] = nextCursor;
+            //      objJSON['post_title'] = post.title;
+            //      objJSON['post_id'] = uuid();
+            //      objJSON['post_type'] = section;
+            //      objJSON['crawled_id'] = post.id;
+            //      //check video                 
+            //      let mediapost = '';
+            //      if(post.type=="Photo" || post.type=="Article"){
+            //         objJSON['media_type'] = CONFIG.CONTENT_TYPE.PHOTO;
+            //         objJSON['ext'] = post.images.image700.url.split('.').pop();
+            //         try {
+            //             mediapost = await rp.get({
+            //                 uri: post.images.image700.url,
+            //                 encoding: null
+            //             });
+            //         } catch (error) {
+            //             console.log(error)
+            //         }
+            //      }else{
+            //         objJSON['media_type'] = CONFIG.CONTENT_TYPE.VIDEO;
+            //         objJSON['ext'] = post.images.image460sv.url.split('.').pop();
+                    
+            //         mediapost = await rp.get({
+            //             uri: post.images.image460sv.url,
+            //             encoding: null
+            //         });
+            //      }
+            //      let date = new Date(), 
+            //          month = date.getMonth()+1,
+            //          today = `${date.getDate()}-${month}-${date.getFullYear()}`;
+                     
+            //      let perdayFolder = `${section}_${today}`;
+            //      if(!fs.existsSync(`./crawled-memes/${perdayFolder}`)){
+            //         fs.mkdirSync(`./crawled-memes/${perdayFolder}`);                
+            //      }                 
+
+            //      const contentType = objJSON['media_type'] == CONFIG.CONTENT_TYPE.VIDEO ? `video/${objJSON['ext']}` : `image/${objJSON['ext']}`;
+            //      const s3Uploadresult = s3upload(mediapost, contentType, `9gag_data/${objJSON['post_id']}.${objJSON['ext']}`);
+            //            console.log(s3Uploadresult);
+            //            objJSON['post_url'] = s3Uploadresult['post_url'];
+
+            //       fs.writeFileSync(`./crawled-memes/${perdayFolder}/${objJSON['post_id']}.${objJSON['ext']}`, mediapost);
+            //       finalArray.push(objJSON);
+            //  }
+
+            //  crawledPosts.insertMany(finalArray, function(error, docs) {
+            //     res.send({
+            //         docs
+            //     })
+            //  });
       });
 
       router.get('/facebook-page', (req, res)=>{
@@ -177,11 +238,11 @@ export default (router)=>{
                     url: "https://s4.scoopwhoop.com/anj/sw/51b1f5e3-6473-4aae-a2c6-81b6474cdd68.jpg"
                 }
             ]
-    //     curl -i -X GET "https://graph.facebook.com/v5.0/oauth/access_token?  
-    // grant_type=fb_exchange_token&          
-    // client_id=426940641303361&
-    // client_secret=9201de519aee8843c2b7fe94f7ad0a5a&
-    // fb_exchange_token=EAAGETN1D20EBAOwFM3Q30NyLBDRcMyZCybsvUhyipskzZAwMfBiYoN3H6KCUk18MRZBlzINVJmflJK4bDe9hH57GhZCtLz3YcdWZCRJcS4pLYWmG2zWLRN40qrRLjls6xGZCUgfUtOR3NHZCSWWGqmSZBCjX6HubHG2DAe8EQfzQZC9QAuf65bYxCgAYZBd7mSLYVLX97HILumnwZDZD
+            //     curl -i -X GET "https://graph.facebook.com/v5.0/oauth/access_token?  
+            // grant_type=fb_exchange_token&          
+            // client_id=426940641303361&
+            // client_secret=9201de519aee8843c2b7fe94f7ad0a5a&
+            // fb_exchange_token=EAAGETN1D20EBAOwFM3Q30NyLBDRcMyZCybsvUhyipskzZAwMfBiYoN3H6KCUk18MRZBlzINVJmflJK4bDe9hH57GhZCtLz3YcdWZCRJcS4pLYWmG2zWLRN40qrRLjls6xGZCUgfUtOR3NHZCSWWGqmSZBCjX6HubHG2DAe8EQfzQZC9QAuf65bYxCgAYZBd7mSLYVLX97HILumnwZDZD
 
 
             //https://9gag.com/v1/group-posts/group/football
