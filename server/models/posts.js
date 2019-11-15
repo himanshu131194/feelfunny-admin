@@ -39,6 +39,10 @@ const Comments = new mongoose.Schema({
       next_cursor:{
          type: String
       },
+      refresh: {
+          type: Boolean,
+          default: 0
+      },
       created: {
       	 type: Date,
       	 default: Date.now

@@ -16,10 +16,11 @@ class Crawler extends CommonClass(Component){
            await this.setState({section : e.target.innerHTML});
       }
       crawldata = async (e)=>{
+          const mine = e.target.dataset.mine ? 'mine' : '';
           await this.setState({loading :1});
           e.preventDefault();
           let section = this.state.section.toLowerCase();
-          const {data} = await axios.get(`/api/9gag-data?section=${section}`);
+          const {data} = await axios.get(`/api/9gag-data?section=${section}&mine=${mine}`);
           await this.setState({loading :0});
       } 
       render(){
@@ -83,6 +84,9 @@ class Crawler extends CommonClass(Component){
 		        	 	  	   <div className="flex-center">
 							      <a className="tags-box featured-tags-box margin-ryt-10" onClick={this.crawldata}>
 							        Refresh Crawled Data
+							      </a>
+                                  <a className="tags-box featured-tags-box margin-ryt-10" data-mine="true" onClick={this.crawldata}>
+							         Data Mining
 							      </a>
                                   {this.state.loading==1 &&
                                     <div id="canvas-loader" className="loader-circular loader-30"></div>
