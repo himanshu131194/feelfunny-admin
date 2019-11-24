@@ -5,6 +5,7 @@ import uuid from 'uuid/v4';
 import AWS from 'aws-sdk';
 import fs from 'fs';
 import crawledPosts from '../models/posts';
+import { lookup } from 'dns';
 
 export default (router)=>{
 
@@ -84,7 +85,11 @@ export default (router)=>{
 
             for(let post of posts){
                 //check post is already exists 
-                //console.log(post);
+                console.log(post);
+
+                if(post.video  && post.video.source=='YouTube'){
+                    continue;
+                }
                 const checkpostexists = await crawledPosts.findOne({ crawled_id : post.id})
                 if(checkpostexists){
                      if (alldata){
@@ -157,7 +162,10 @@ export default (router)=>{
       }
 
       const getLatestCursor =  async (section)=>{
-            const lastCursor = await crawledPosts.findOne({refresh : 1}).sort({created: -1});
+            let lastCursor = await crawledPosts.findOne({refresh : 1}).sort({created: -1});
+            if(!lastCursor){
+                lastCursor = await crawledPosts.findOne({refresh : 0}).sort({created: -1});
+            }
             update9gagdb(section, lastCursor['next_cursor']);
             // { posted_fb: false,
             //     posted_web: false,
@@ -205,7 +213,7 @@ export default (router)=>{
                     url: "https://s4.scoopwhoop.com/anj/sw/51b1f5e3-6473-4aae-a2c6-81b6474cdd68.jpg"
                 }
             ]
-            //     curl -i -X GET "https://graph.facebook.com/v5.0/oauth/access_token?  
+            // curl -i -X GET "https://graph.facebook.com/v5.0/oauth/access_token?  
             // grant_type=fb_exchange_token&          
             // client_id=426940641303361&
             // client_secret=9201de519aee8843c2b7fe94f7ad0a5a&
@@ -249,6 +257,76 @@ export default (router)=>{
                         key: err
                    })
                 });
+      })
+
+
+      router.get('/memes-list',  async (req, res)=>{
+             try{
+                const skip = parseInt(req.query.offset) || 0,
+                      limit = parseInt(req.query.limit) || 40,
+                      post_type = req.query.section || 'awesome';
+                
+                console.log(req.query);
+                const memes = await crawledPosts.find({post_type})
+                                           .skip(skip)
+                                           .limit(limit)
+                                           .sort({created: -1});
+                    
+                res.status(200).send({
+                    data : memes  
+                })
+             }catch(e){
+                 console.log(e);
+                res.status(400).send({
+                    error : CONFIG.ERROR[101]
+                })
+             }
+      });
+
+      
+      router.post('/uplod-localmemes-s3', async (req, res)=>{
+                const s3 = new AWS.S3({
+                        accessKeyId: CONFIG.S3_KEYS.ACCESS,
+                        secretAccessKey: CONFIG.S3_KEYS.SECRET,
+                });
+                try{
+                    let result = null;
+                    if(!req.body.url && req.body.data64){
+                            result = Buffer.from(req.body.data64.replace(/^data:image\/\w+;base64,/, ""), 'base64');
+                        }else{
+                            result = await rp({url: req.body.url, encoding: null});
+                        }
+                    const slugId = uuid();
+                    const base64Data = result;
+                    const type = req.body.mime;
+                    const key = `posts/${slugId}.${req.body.ext}`;
+                    const params = {
+                    Bucket: CONFIG.S3_KEYS.BUCKET,
+                    Key: key,
+                    Body: base64Data,
+                    ContentType: type
+                    }
+                    const s3Result = await s3.putObject(params).promise(); 
+                    console.log(s3Result);
+                    
+                    const objJSON = {};
+                    objJSON['post_id'] = slugId;
+                    objJSON['media_type'] = type.indexOf('video')>=0  ? CONFIG.CONTENT_TYPE.VIDEO: CONFIG.CONTENT_TYPE.PHOTO;
+                    objJSON['ext'] = req.body.ext;
+                    objJSON['post_url'] = `https://feel-funny.s3.ap-south-1.amazonaws.com/${key}`;
+                 
+                    const posts = new crawledPosts(objJSON);
+                    const response = await posts.save();
+
+                    res.status(200).send({
+                        url : `https://feel-funny.s3.ap-south-1.amazonaws.com/${CONFIG.S3_KEYS.BUCKET}/${key}`,
+                        response
+                    });
+                }catch(e){
+                    res.status(400).send({
+                        error: 'Please try to upload again'
+                    })
+                }//
       })
 
       return router;

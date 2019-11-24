@@ -2,6 +2,7 @@ export default {
   env: process.env.NODE_ENV || 'development',
   port: process.env.PORT || 4000,
   API_URL: "http://localhost:3000",
+  SELF_URL: "http://localhost:4000",
   ACCESS_TOKEN : "0z6v8b4uua",
   ERROR: {
   	 100: 'Please put a valid image url',
@@ -13,6 +14,12 @@ export default {
     ACCESS: 'AKIA3YIPQLXVUZ3S3UD7',
     SECRET: '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',
     PASSWORD: 'WMwQ}t%c(XqR'
+ },
+ S3_KEYS:{
+  BUCKET : 'feel-funny',
+  // URL : 'https://stylemycv.s3.ap-south-1.amazonaws.com',
+  ACCESS: 'AKIA3YIPQLXV4NIO3PWA',
+  SECRET: '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',
  },
   FB:{
      ACCESS_TOKEN: "EAAGETN1D20EBAEiWQvpJ9v0v0zfyeDYWzo9C8qqVJucIve3FsUOPKrGDFuJZBMZAediW9ZCKZChvNkQDeElzU4dKOhaf7UxFzPNt4pzKojBZB7mZBHIFCmmERlDDXpFYE1jq9wZBfVxmZCJHL5tSeyjekjKqF4xlZALdqlz9xfz8mxwZDZD",

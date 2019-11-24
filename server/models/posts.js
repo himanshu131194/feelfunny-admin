@@ -24,10 +24,10 @@ const Comments = new mongoose.Schema({
         type: Boolean,
         default: 0
       },
-      postted_web_time:{ 
+      posted_web_time:{ 
         type: Date
       },
-      postted_fb_time:{ 
+      posted_fb_time:{ 
         type: Date
       },
       ext:{

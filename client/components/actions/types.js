@@ -6,3 +6,5 @@ export const SECTIONS_LIST = "sections_list"
 export const UPLOAD_S3 = "upload_s3"
 export const DEFAULT_STATE = "default_state"
 export const ADD_SECTION = "add_section"
+export const MEMES_LIST = "memes_list"
+

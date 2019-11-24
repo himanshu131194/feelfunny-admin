@@ -1,0 +1,41 @@
+this.props.listOfMemes.map((result)=>{
+         {this.state.loading_posts==0
+                                    ? <div className="txt-center">
+                                        <div className="margin-top-20">
+                                        <h3 className="color-90949c">No posts to show</h3>
+                                        <svg className="svg-icons-200" viewBox="0 0 59.227 59.227">
+                                                <use href="/icons/sprites.svg#empty_box" />
+                                        </svg>
+                                        </div>
+                                    </div>
+                                    : 
+                                        return (
+                                                <div className="posts" key={result._id}>
+                                                    <header className="post-header">
+                                                    <div className="flex margin-botm-8">
+                                                            {/* <a href="#" className="post-categoty-icon margin-ryt-10">
+                                                                <img src={result.section_details[0].url} alt="" />
+                                                            </a>
+                                                            <span className="flex-center color-90949c">
+                                                                <a href="#" className="capitalize margin-ryt-10">{result.section_details[0].value}</a> 
+                                                                <svg className="svg-icons-12 margin-ryt-5" viewBox="0 0 510 510">
+                                                                    <use href="/icons/sprites.svg#postage_icon" />
+                                                                </svg>
+                                                                1d
+                                                            </span> */}
+                                                    </div>
+                                                    <div>
+                                                        <a href={"/posts/123456"+result._id} onLoad={this.loadEmojis} className="post-title"><h1 className="font-20 padding-botm-8">{result.post_title}</h1></a>
+                                                    </div>
+                                                    </header>
+                                                    <div className="posts-body">
+                                                        <a href={"/posts/"+result._id} className="margin-botm-8">
+                                                            {result.media_type==1
+                                                            ? <img src={result.post_url} alt="" />
+                                                            : <video src={result.post_url} controls></video>
+                                                            }
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                        )
+                                    })

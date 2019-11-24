@@ -1,4 +1,4 @@
-import {AUTH_USER, ADD_USER, LOGIN_USER, LOGOUT_USER, SECTIONS_LIST, DEFAULT_STATE, ADD_SECTION} from './types'
+import {AUTH_USER, ADD_USER, LOGIN_USER, LOGOUT_USER, SECTIONS_LIST, DEFAULT_STATE, ADD_SECTION, MEMES_LIST} from './types'
 import CONFIG from '../../../config'
 import axios from 'axios'
 
@@ -103,29 +103,57 @@ export const listSections = ()=>{
           }
 }
 
-export const uploadS3 = ({url, mime, ext}, cb)=>{
-        return async ()=>{
-                 const token = localStorage.getItem(CONFIG.ACCESS_TOKEN);
-                 let err = null, result = null;
-                 if(token){
-                     try{
-                         let {data} = await axios.post(`${CONFIG.API_URL}/api/upload-s3`, {url, mime, ext}, {
-                            headers:{
-                                [CONFIG.ACCESS_TOKEN] : token
-                            }
-                           }
-                         );
-                         cb(null, data) 
-                     }catch(e){
-                         err = e.response.data.error;
-                         cb(err, null)
-                     }
-                 }else{
-                    err = CONFIG.ERROR[code];
-                    cb(err, null)
-                 }
-        }
+
+export const loadAllMemes = (queryParams, cb)=>{
+    console.log(queryParams);
+    return async (dispatch)=>{
+           let err = null, result = [];
+           try{
+               let {data} = await axios.get(`${CONFIG.SELF_URL}/api/memes-list`, {
+                    params : {
+                        section : queryParams.section, 
+                        limit : queryParams.limit, 
+                        offset : queryParams.offset
+                    }
+               });
+                    result = data.data
+           }catch(e){
+               err = e.response.data.error;
+           }
+           dispatch({
+               type: MEMES_LIST,
+               payload: result
+           })
+           cb();
+    }
 }
+
+// export const uploadMimeToS3 = ({url, mime, ext}, cb)=>{
+//         return async ()=>{
+//                  let err = null, result = null;
+//                      try{
+//                          let {data} = await axios.post(`${CONFIG.API_URL}/api/uplod-localmemes-s3`, {url, mime, ext});
+//                          cb(null, data) 
+//                      }catch(e){
+//                          err = e.response.data.error;
+//                          cb(err, null)
+//                      }
+//         }
+// }
+
+export const uploadMimeToS3 = ({url, mime, ext, data64}, cb)=>{
+    return async ()=>{
+             let err = null, result = null;
+                 try{
+                     let {data} = await axios.post(`${CONFIG.SELF_URL}/api/uplod-localmemes-s3`, {url, mime, ext, data64});
+                     cb(null, data) 
+                 }catch(e){
+                     err = e.response.data.error;
+                     cb(err, null)
+                 }
+    }
+}
+
 
 export const uploadAll = ({uploadedURL, postSlug, postTitle, postTags, postSection, postMime, postNSFW}, cb)=>{
         return async ()=>{

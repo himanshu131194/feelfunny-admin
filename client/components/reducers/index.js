@@ -1,8 +1,9 @@
 import {combineReducers} from 'redux'
-import {authReducer, loginReducer, sectionsReducer, defaultReducer} from './reducers'
+import {authReducer, loginReducer, sectionsReducer, defaultReducer, listMemes} from './reducers'
 
 export default combineReducers({
 	  uploadedState: defaultReducer,
 	  auth: loginReducer,
-	  sectionsList : sectionsReducer
+	  sectionsList : sectionsReducer,
+	  listOfMemes :  listMemes
 })

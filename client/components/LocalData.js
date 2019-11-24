@@ -4,7 +4,7 @@ import * as actions from './actions'
 import CommonClass from './CommonClass'
 import CONFIG from '../../config';
 import axios from 'axios';
-import Header from './partials/Header';
+import LocalDataHeader from './partials/LocalDataHeader';
 // import InfiniteScroll from 'react-infinite-scroller';
 import ScrollTest from './ScrollTest'
 
@@ -60,7 +60,7 @@ class Crawler extends CommonClass(Component){
       render(){
         return(
                 <Fragment>
-               <Header/>
+               <LocalDataHeader/>
 
                 <main className="main-content-box">
                   <div className="flex main-content-wrapper">
@@ -145,7 +145,7 @@ class Crawler extends CommonClass(Component){
                                 _id: "5dcedd9e2a16732714a3b7e6" */}
                                 <div className="posts-container">
                                         
-                            {this.state.section && <ScrollTest onSectionSelect={this.state.section.toLowerCase()}/>}				   
+                                {/*this.state.section && <ScrollTest onSectionSelect={this.state.section.toLowerCase()}/>*/}				   
                                             
                                 </div>
                         </div>

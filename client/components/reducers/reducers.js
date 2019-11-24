@@ -1,4 +1,4 @@
-import {AUTH_USER, ADD_USER, LOGIN_USER, LOGOUT_USER, SECTIONS_LIST, DEFAULT_STATE} from '../actions/types'
+import {AUTH_USER, ADD_USER, LOGIN_USER, LOGOUT_USER, SECTIONS_LIST, DEFAULT_STATE, MEMES_LIST} from '../actions/types'
 
 // export const authReducer = (state=false, action)=>{
 // 	   switch(action.type){
@@ -36,6 +36,17 @@ export const sectionsReducer = (state=[], action)=>{
 	   	    return state;
 	    }
 } 
+
+
+export const listMemes = (state=[], action)=>{
+	switch(action.type){
+		  case MEMES_LIST:
+			return action.payload;
+		  default: 
+		   return state;
+	}
+} 
+
 
 export const defaultReducer = (state=1, action)=>{
 		switch(action.type){
